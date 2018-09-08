@@ -1,37 +1,15 @@
 `timescale 1ns / 1ps
 
-////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer:
-//
-// Create Date:   21:45:16 11/05/2017
-// Design Name:   Test Synchronus FIFO
-// Module Name:   E:/CDAC Work/CDAC/XilinxISE_danish/Synchronus_FIFO/Test_Syn_FIFO.v
-// Project Name:  Synchronus_FIFO
-// Target Device:  
-// Tool versions:  
-// Description: 
-//
-// Verilog Test Fixture created by ISE for module: fifo
-//
-// Dependencies:
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-////////////////////////////////////////////////////////////////////////////////
-
 `define BUF_WIDTH 3
 
-module Test_Sync_FIFO();
+module tb_syncbram_fifo();
 reg clk, rst, wr_en, rd_en ;
 reg[7:0] buf_in;
 reg[7:0] tempdata;
 wire [7:0] buf_out;
 wire [`BUF_WIDTH :0] fifo_counter;
 
-Sync_FIFO ff( .clk(clk), .rst(rst), .buf_in(buf_in), .buf_out(buf_out), 
+syncbram_fifo dut0( .clk(clk), .rst(rst), .buf_in(buf_in), .buf_out(buf_out), 
          .wr_en(wr_en), .rd_en(rd_en), .buf_empty(buf_empty), 
          .buf_full(buf_full), .fifo_counter(fifo_counter) );
 
@@ -88,6 +66,7 @@ begin
         pop(tempdata);
         push(5);
         pop(tempdata);
+		  $finish();
 end
 
 always
