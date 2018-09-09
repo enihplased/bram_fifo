@@ -1,112 +1,122 @@
-`timescale 1ns / 1ps
 
-`define BUF_WIDTH 3
+`timescale 1ns / 100ps
 
 module tb_syncbram_fifo();
-reg clk, rst, wr_en, rd_en ;
-reg[7:0] buf_in;
-reg[7:0] tempdata;
-wire [7:0] buf_out;
-wire [`BUF_WIDTH :0] fifo_counter;
 
-syncbram_fifo dut0( .clk(clk), .rst(rst), .buf_in(buf_in), .buf_out(buf_out), 
-         .wr_en(wr_en), .rd_en(rd_en), .buf_empty(buf_empty), 
-         .buf_full(buf_full), .fifo_counter(fifo_counter) );
+reg clk, rst, wr_en, rd_en;
+
+reg   [ 7 : 0 ] buf_in;
+reg   [ 7 : 0 ] tempdata;
+wire  [ 7 : 0 ] buf_out;
+
+   syncbram_fifo dut0 (
+      .clk        (clk),
+      .rst        (rst),
+      .buf_in     (buf_in),
+      .buf_out    (buf_out),
+      .wr_en      (wr_en),
+      .rd_en      (rd_en),
+      .buf_empty  (buf_empty),
+      .buf_full   (buf_full)
+   );
 
 initial
 begin
-   clk = 0;
    rst = 1;
-        rd_en = 0;
-        wr_en = 0;
-        tempdata = 0;
-        buf_in = 0;
+   rd_en = 0;
+   wr_en = 0;
+   tempdata = 0;
+   buf_in = 0;
 
+   repeat(10) @(negedge clk);
+   rst = 0;
 
-        #15 rst = 0;
-  
-        push(1);
-        fork
-           push(2);
-           pop(tempdata);
-        join              //push and pop together   
-        push(10);
-        push(20);
-        push(30);
-        push(40);
-        push(50);
-        push(60);
-        push(70);
-        push(80);
-        push(90);
-        push(100);
-        push(110);
-        push(120);
-        push(130);
+   push(1);
+   push(2);
+   push(3);
+   push(4);
+   push(5);
+   push(6);
+   push(7);
+   push(8);
+   push(80);
+   push(81);
 
-        pop(tempdata);
-        push(tempdata);
-        pop(tempdata);
-        pop(tempdata);
-        pop(tempdata);
-        pop(tempdata);
-		  push(140);
-        pop(tempdata);
-        push(tempdata);//
-        pop(tempdata);
-        pop(tempdata);
-        pop(tempdata);
-        pop(tempdata);
-        pop(tempdata);
-        pop(tempdata);
-        pop(tempdata);
-        pop(tempdata);
-        pop(tempdata);
-        pop(tempdata);
-        pop(tempdata);
-        push(5);
-        pop(tempdata);
-		  $finish();
+   pop(tempdata);
+   pop(tempdata);
+   pop(tempdata);
+   pop(tempdata);
+   pop(tempdata);
+   pop(tempdata);
+   pop(tempdata);
+   pop(tempdata);
+
+   push(9);
+   push(10);
+   push(11);
+   push(12);
+   push(13);
+   push(14);
+
+   pop(tempdata);
+   pop(tempdata);
+   pop(tempdata);
+   pop(tempdata);
+   pop(tempdata);
+   pop(tempdata);
+
+   push(15);
+
+   pop(tempdata);
+
+   push(16);
+
+   pop(tempdata);
+
+   push(17);
+
+   pop(tempdata);
+
+   push(18);
+
+   pop(tempdata);
+   pop(tempdata);
+
+   $finish();
 end
 
-always
-   #5 clk = ~clk;
+initial begin clk = 0; forever #5 clk = ~clk; end
 
 task push;
 input[7:0] data;
 
-
-   if( buf_full )
-            $display("---Cannot push: Buffer Full---");
-        else
-        begin
-           $display("Pushed ",data );
-           buf_in = data;
-           wr_en = 1;
-                @(posedge clk);
-                #1 wr_en = 0;
-        end
-
+   @(negedge clk)
+   if ( buf_full )
+      $display("----CANNOT PUSH %02d : BUFFER FULL----", data);
+   else
+      begin
+         $display("%0t\tPUSHED %02d", $time, data );
+         buf_in = data;
+         wr_en = 1'b1;
+         @(negedge clk);
+         wr_en = 1'b0;
+      end
 endtask
 
 task pop;
 output [7:0] data;
 
-   if( buf_empty )
-            $display("---Cannot Pop: Buffer Empty---");
+   @(negedge clk)
+   if ( buf_empty )
+      $display("----CANNOT POP : BUFFER EMPTY----");
    else
-        begin
-
-     rd_en = 1;
-          @(posedge clk);
-
-          #1 rd_en = 0;
-          data = buf_out;
-           $display("-------------------------------Poped ", data);
-
-        end
+      begin
+         rd_en = 1'b1;
+         @(negedge clk);
+         rd_en = 1'b0;
+         data = buf_out;
+         $display("%0t\t-------------------------------POPED %02d ", $time, data);
+      end
 endtask
 
 endmodule
-
-
